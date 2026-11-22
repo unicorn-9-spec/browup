@@ -37,8 +37,9 @@ export const VALIDITY = {
   BLINK_MASK_FRAMES: 2,
   /** Landmark fallback for blinks: eye opening below this fraction of the
    *  calibrated neutral opening counts as a blink even if the SDK's blink
-   *  flag missed it. */
-  BLINK_APERTURE_FRACTION: 0.45,
+   *  flag missed it. Kept low (a blink closes the eye almost fully) so the
+   *  squint that often comes with a wh-furrow is NOT mistaken for a blink. */
+  BLINK_APERTURE_FRACTION: 0.3,
   /** A blink sample is matched to a landmark frame within this distance. */
   BLINK_MATCH_MS: 25,
   /** MULTIPLE_FACES_FOUND flickers for single frames with one person present

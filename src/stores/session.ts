@@ -43,17 +43,21 @@ export const useSession = defineStore('session', () => {
   const previewOn = ref(false);
   const cameraOn = computed(() => mode.value === 'live' || mode.value === 'starting' || previewOn.value);
 
-  /** Banner text once the code has lasted the debounce time. */
-  const banner = computed(() => {
+  // Re-evaluate the debounce on a steady clock — when the face is lost no
+  // frames arrive, and that is exactly when the hint matters most.
+  const tick = ref(0);
+  setInterval(() => { if (code.value !== VC.kOk) tick.value++; }, 250);
+
+  /** Banner text once the code has lasted the debounce time (Date.now() is
+   *  not reactive, so this reads `tick` to be re-evaluated). */
+  const bannerNow = computed(() => {
+    void tick.value;
     const title = validationBanner(code.value);
     if (!title) return null;
     const need = code.value === VC.kMultipleFacesFound ? VALIDITY.MULTI_FACE_DEBOUNCE_MS : BANNER_DEBOUNCE_MS;
     if (Date.now() - codeSince.value < need) return null;
     return { title, hint: hint.value };
   });
-  // Re-evaluate the debounce each frame.
-  const tick = ref(0);
-  const bannerNow = computed(() => { void tick.value; return banner.value; });
 
   /** Whether the current marker's target state holds right now (overlay
    *  turns mint). */

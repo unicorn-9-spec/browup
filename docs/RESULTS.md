@@ -6,11 +6,23 @@ All numbers here are measured. Nothing is estimated, and blanks stay blank until
 
 | Suite | Result |
 | --- | --- |
-| Unit (`npm test`) | **73 passed**. Covers marker rules on synthetic fixtures (correct, late start, early drop, dip, missing, hidden, blink storm, wrong marker) for yes/no, wh, negation, affirmation and topic; features; calibration; coverage; content schema and the reviewer rule; decoding; recording round trip; replay determinism; review scoring; capture timing; error mapping; privacy scans. |
+| Unit (`npm test`) | **74 passed**. Covers marker rules on synthetic fixtures (correct, late start, early drop, dip, missing, hidden, blink storm, squint during a furrow, wrong marker) for yes/no, wh, negation, affirmation and topic; features; calibration; coverage; content schema and the reviewer rule; decoding; recording round trip; replay determinism; review scoring; capture timing; error mapping; privacy scans. |
 | End-to-end in replay (`npm run test:e2e`) | **11 passed**. Covers the keyboard-only lesson (MISSING → HELD on retry → NOT SEEN), negation, topic, mixed review, progress and export, reduced motion, layout at 1280×720 and 1920×1080, and refusal of an unreviewed pack. |
 | Replay fixture (`npm run fixtures`) | **59 of 59** synthetic clips give their intended verdict through the app's own pipeline. |
 
 The synthetic fixtures come from a face model, not a person. They prove the rules and the plumbing; they do **not** measure real-world accuracy. That comes from sections 2–4.
+
+## 1b. Live smoke checks without a person (22 Nov 2026, HP laptop, dark room)
+
+| Check | Result |
+| --- | --- |
+| Key authentication; FACE_LANDMARKS + BLINKING + EXPRESSIONS accepted | ✅ |
+| Default camera is virtual ("TranScreen Camera") → the HP webcam is chosen automatically | ✅ |
+| Calibration with no visible face refuses the neutral step with a reason | ✅ "I could only see your face clearly for 0%…" |
+| Live capture with no visible face is cancelled, with no verdict | ✅ "We lost sight of your face, so that attempt was not judged." |
+| The SDK hint is shown over the mirror | ✅ "Too dark to see your brows — Increase light on face." |
+| <kbd>Esc</kbd> → camera off | ✅ 43–57 ms (target ≤ 1 s) |
+| Console errors during the live flow | none |
 
 ## 2. Stage 1 face check (`npm run probe`, then `npm run probe:analyze`)
 

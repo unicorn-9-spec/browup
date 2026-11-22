@@ -72,6 +72,9 @@ describe('wh-question (furrowed brows)', () => {
   test('neutral → MISSING', () => {
     expect(attempt('wh', () => ({})).kind).toBe('MISSING');
   });
+  test('a squint during the furrow is not mistaken for a blink', () => {
+    expect(attempt('wh', (s) => ({ ...furrow(hold(s, 0.1, W + 1)), blink: 0.6 * hold(s, 0.1, W + 1) }), { blinkBrowArtifact: 0 }).kind).toBe('HELD');
+  });
   test('lowered without drawing together → MISSING (both parts are required)', () => {
     expect(attempt('wh', () => ({ lower: 0.12 })).kind).toBe('MISSING');
   });

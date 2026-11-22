@@ -177,7 +177,7 @@ export function synthStream(script: (s: number) => FaceState, durationS: number,
       lastCode = st.code;
     }
     if (!st.visible) { first = true; continue; }
-    out.push({ kind: 'blink', recvUs: recv, sample: { t, detected: st.blink > 0.5 } });
+    out.push({ kind: 'blink', recvUs: recv, sample: { t, detected: st.blink > 0.8 } }); // a blink = eye (nearly) closed
     if (o.expressions) {
       const noise = () => Math.abs(r.gauss()) * 4;
       out.push({ kind: 'expr', recvUs: recv, sample: {
@@ -197,7 +197,9 @@ export function synthStream(script: (s: number) => FaceState, durationS: number,
 export const ramp = (s: number, a: number, b: number) => (s <= a ? 0 : s >= b ? 1 : 0.5 - 0.5 * Math.cos(((s - a) / (b - a)) * Math.PI));
 /** 1 inside [a, b] with smooth edges of width e. */
 export const hold = (s: number, a: number, b: number, e = 0.15) => ramp(s, a - e, a) * (1 - ramp(s, b, b + e));
-/** Blink envelope: closed around each time in `at` for ~120 ms. */
-export const blinkAt = (s: number, at: readonly number[]) => Math.max(0, ...at.map((c) => 1 - Math.min(1, Math.abs(s - c) / 0.06)));
+/** Blink envelope around each time in `at`: fully closed for ~70 ms, with
+ *  ~55 ms closing and opening ramps (a real blink lasts 100–200 ms). */
+export const blinkAt = (s: number, at: readonly number[]) =>
+  Math.max(0, ...at.map((c) => Math.max(0, Math.min(1, (0.09 - Math.abs(s - c)) / 0.055))));
 /** Side-to-side oscillation with amplitude A degrees and f Hz inside [a, b]. */
 export const shake = (s: number, a: number, b: number, A: number, f = 2.2) => hold(s, a, b, 0.1) * A * Math.sin(2 * Math.PI * f * (s - a));

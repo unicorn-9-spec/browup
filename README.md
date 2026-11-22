@@ -32,10 +32,14 @@ You need Node 20.19+ and Windows x64, macOS on Apple Silicon, or Linux x64/ARM64
 
 ```bash
 npm install                # pulls the SDK's native runtime (~350 MB)
-npm run start:unreviewed   # until the content pack is reviewed
+npm run preflight          # checks SDK, camera, key, pack, build and tests
+npm run demo:unreviewed    # until the content pack is reviewed
+npm run demo:fresh         # same, with a clean first-run profile
 # after review sign-off:
-npm start
+npm run demo
 ```
+
+Recording a demo? See [docs/DEMO.md](docs/DEMO.md).
 
 **Replay, no camera, no key.** On the Welcome screen, choose **Watch a replay**. It plays a bundled, clearly labelled *synthetic* session generated from a face model. For every prompt there is a common mistake and a correct production, so a judge can press <kbd>Space</kbd>, see **MISSING**, press <kbd>R</kbd> and see **HELD**. Nothing is saved.
 

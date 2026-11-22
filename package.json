@@ -16,9 +16,14 @@
     "test:watch": "vitest",
     "test:e2e": "electron-vite build && playwright test",
     "fixtures": "tsx scripts/make-fixtures.ts",
-    "probe": "electron-vite build && electron . --probe --dev-unreviewed",
+    "probe": "electron-vite build && node scripts/launch.mjs --probe",
     "probe:analyze": "tsx probe/analyze.ts",
-    "probe:synthetic": "tsx scripts/synth-probe-log.ts synthetic-probe.jsonl && tsx probe/analyze.ts synthetic-probe.jsonl"
+    "probe:synthetic": "tsx scripts/synth-probe-log.ts synthetic-probe.jsonl && tsx probe/analyze.ts synthetic-probe.jsonl",
+    "demo": "electron-vite build && node scripts/launch.mjs",
+    "demo:unreviewed": "electron-vite build && node scripts/launch.mjs --unreviewed",
+    "demo:fresh": "electron-vite build && node scripts/launch.mjs --unreviewed --fresh",
+    "preflight": "tsx scripts/preflight.mts",
+    "review:approve": "node scripts/approve-review.mjs"
   },
   "engines": {
     "node": ">=20.19"
