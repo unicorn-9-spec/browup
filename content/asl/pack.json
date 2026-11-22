@@ -1,0 +1,56 @@
+{
+  "packId": "asl-core",
+  "language": "ASL",
+  "languageName": "American Sign Language",
+  "version": "0.1.0",
+  "notice": "UNREVIEWED DRAFT. These prompts follow common textbook examples of non-manual markers and were drafted by the developer as placeholders. They have NOT been reviewed by a Deaf signer or qualified ASL teacher, and the app refuses to present them as correct until a reviewer signs off (docs/CONTENT-REVIEW.md).",
+  "sources": [
+    { "id": "asl-bloom", "title": "ASL Bloom — Non-manual markers in ASL", "url": "https://www.aslbloom.com/blog/non-manual-markers-asl" },
+    { "id": "lifeprint", "title": "Lifeprint ASL University (Bill Vicars) — lessons on questions, negation and topicalisation (pages to be confirmed by the reviewer)", "url": "https://www.lifeprint.com/" },
+    { "id": "handspeak", "title": "Handspeak — ASL grammar: non-manual signals (pages to be confirmed by the reviewer)", "url": "https://www.handspeak.com/" }
+  ],
+  "sets": [
+    { "id": "yes-no", "title": "Yes/no questions", "description": "Raised brows across the whole question.", "prompts": ["yn-01", "yn-02", "yn-03", "yn-04", "yn-05", "yn-06", "yn-07", "yn-08"] },
+    { "id": "wh", "title": "Wh-questions", "description": "Brows down and drawn together across the whole question.", "prompts": ["wh-01", "wh-02", "wh-03", "wh-04", "wh-05", "wh-06", "wh-07", "wh-08"] },
+    { "id": "negation", "title": "Negation", "description": "A side-to-side head shake across the negated part.", "prompts": ["neg-01", "neg-02", "neg-03", "neg-04", "neg-05"] },
+    { "id": "affirmation", "title": "Affirmation", "description": "A nod across the affirmed sentence.", "prompts": ["aff-01", "aff-02", "aff-03"] },
+    { "id": "topic", "title": "Topics", "description": "Raised brows on the topic, relaxed for the comment.", "prompts": ["t-01", "t-02", "t-03"] },
+    { "id": "conditional", "title": "Conditionals (extra)", "description": "Raised brows on the 'if' part, then a change for the result.", "prompts": ["c-01", "c-02"] }
+  ],
+  "prompts": [
+    { "id": "yn-01", "marker": "yn", "meaning": "Are you hungry?", "gloss": ["YOU", "HUNGRY"], "span": [0, 1], "sources": ["asl-bloom", "lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-02", "marker": "yn", "meaning": "Are you Deaf?", "gloss": ["YOU", "DEAF"], "span": [0, 1], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-03", "marker": "yn", "meaning": "Are you a student?", "gloss": ["YOU", "STUDENT"], "span": [0, 1], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-04", "marker": "yn", "meaning": "Do you like coffee?", "gloss": ["YOU", "LIKE", "COFFEE"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-05", "marker": "yn", "meaning": "Do you have a car?", "gloss": ["YOU", "HAVE", "CAR"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-06", "marker": "yn", "meaning": "Have you eaten?", "gloss": ["YOU", "FINISH", "EAT"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft. FINISH as a completive marker." },
+    { "id": "yn-07", "marker": "yn", "meaning": "Is your mother Deaf?", "gloss": ["YOUR", "MOTHER", "DEAF"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "yn-08", "marker": "yn", "meaning": "Do you want to go to a movie?", "gloss": ["YOU", "WANT", "GO", "MOVIE"], "span": [0, 3], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+
+    { "id": "wh-01", "marker": "wh", "meaning": "What is your name?", "gloss": ["YOUR", "NAME", "WHAT"], "span": [0, 2], "sources": ["asl-bloom", "lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft. Wh-sign at the end." },
+    { "id": "wh-02", "marker": "wh", "meaning": "Where do you live?", "gloss": ["YOU", "LIVE", "WHERE"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-03", "marker": "wh", "meaning": "Where are you from?", "gloss": ["YOU", "FROM", "WHERE"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-04", "marker": "wh", "meaning": "Where is the bathroom?", "gloss": ["BATHROOM", "WHERE"], "span": [0, 1], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-05", "marker": "wh", "meaning": "Why are you learning sign language?", "gloss": ["YOU", "LEARN", "SIGN", "WHY"], "span": [0, 3], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-06", "marker": "wh", "meaning": "Who is your teacher?", "gloss": ["YOUR", "TEACHER", "WHO"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-07", "marker": "wh", "meaning": "When is your birthday?", "gloss": ["YOUR", "BIRTHDAY", "WHEN"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "wh-08", "marker": "wh", "meaning": "How many brothers and sisters do you have?", "gloss": ["YOU", "HAVE", "BROTHER", "SISTER", "HOW-MANY"], "span": [0, 4], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+
+    { "id": "neg-01", "marker": "neg", "meaning": "I'm not hungry.", "gloss": ["ME", "NOT", "HUNGRY"], "span": [0, 2], "sources": ["asl-bloom", "lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft. Reviewer: confirm whether the neg bar should cover the whole sentence or only NOT HUNGRY." },
+    { "id": "neg-02", "marker": "neg", "meaning": "I don't understand.", "gloss": ["ME", "NOT", "UNDERSTAND"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "neg-03", "marker": "neg", "meaning": "I don't like coffee.", "gloss": ["ME", "DON'T-LIKE", "COFFEE"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "neg-04", "marker": "neg", "meaning": "I'm not tired.", "gloss": ["ME", "NOT", "TIRED"], "span": [0, 2], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "neg-05", "marker": "neg", "meaning": "I'm not going to school tomorrow.", "gloss": ["TOMORROW", "ME", "NOT", "GO", "SCHOOL"], "span": [1, 4], "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft. Time sign first, outside the neg bar." },
+
+    { "id": "aff-01", "marker": "aff", "meaning": "Yes, I understand.", "gloss": ["ME", "UNDERSTAND"], "span": [0, 1], "sources": ["asl-bloom"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "aff-02", "marker": "aff", "meaning": "I really am hungry.", "gloss": ["ME", "HUNGRY"], "span": [0, 1], "sources": ["asl-bloom"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "aff-03", "marker": "aff", "meaning": "I do like coffee.", "gloss": ["ME", "LIKE", "COFFEE"], "span": [0, 2], "sources": ["asl-bloom"], "reviewed": false, "notes": "UNREVIEWED draft." },
+
+    { "id": "t-01", "marker": "topic", "meaning": "Coffee — I like it.", "gloss": ["COFFEE", "ME", "LIKE"], "span": [0, 0], "split": 1, "sources": ["asl-bloom", "lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft. Topic bar over COFFEE only." },
+    { "id": "t-02", "marker": "topic", "meaning": "My car — it's red.", "gloss": ["MY", "CAR", "RED"], "span": [0, 1], "split": 2, "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+    { "id": "t-03", "marker": "topic", "meaning": "The homework — I finished it.", "gloss": ["HOMEWORK", "ME", "FINISH"], "span": [0, 0], "split": 1, "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft." },
+
+    { "id": "c-01", "marker": "cond", "meaning": "If it rains, I'll stay home.", "gloss": ["IF", "RAIN", "ME", "STAY", "HOME"], "span": [0, 1], "split": 2, "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft (P2)." },
+    { "id": "c-02", "marker": "cond", "meaning": "If you're tired, go to bed.", "gloss": ["IF", "YOU", "TIRED", "GO-TO-BED"], "span": [0, 2], "split": 3, "sources": ["lifeprint"], "reviewed": false, "notes": "UNREVIEWED draft (P2)." }
+  ]
+}

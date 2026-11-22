@@ -1,0 +1,126 @@
+/* BrowUp design tokens — "Bright visual classroom" (PLAN §5).
+   Warm peach paper, tangerine and plum, flat colour fields (no gradients),
+   chunky friendly controls. Contrast values are from PLAN §5.2. */
+
+:root {
+  --peach: #fff4ea;          /* background */
+  --tangerine: #f26a1b;      /* primary; plum text on it (4.7:1) */
+  --plum: #3a1d4d;           /* text, frames, notation (13.3:1 on peach) */
+  --mint: #18a88f;           /* correct fill, plum text (4.8:1) */
+  --mint-text: #0f7b69;      /* mint as text (4.8:1) */
+  --red: #c4282e;            /* try-again fill, white text (5.7:1) */
+  --lemon: #ffe27a;          /* target band; highlighted gloss */
+  --tangerine-text: #c2410c; /* links, inline emphasis (4.8:1) */
+  --white: #ffffff;
+
+  /* Flat colour fields (tints, never gradients). */
+  --field-tangerine: #ffe1cc;
+  --field-plum: #efe5f4;
+  --field-mint: #d8f2ec;
+  --hidden: #8b7f91;         /* hidden-frame shading */
+  --plum-soft: #6d5a7a;      /* secondary text on peach (6.4:1) */
+
+  --radius-card: 24px;
+  --radius-btn: 16px;
+  --radius-input: 12px;
+  --ledge: 0 3px 0 var(--plum);
+  --focus: 0 0 0 2px var(--peach), 0 0 0 5px var(--plum);
+
+  --font: 'Lexend', system-ui, sans-serif;
+  --h1: 700 40px/48px var(--font);
+  --h2: 700 28px/36px var(--font);
+  --h3: 600 22px/30px var(--font);
+  --body: 400 18px/28px var(--font);
+  --gloss: 600 32px/40px var(--font);
+  --small: 400 16px/24px var(--font);
+
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--peach);
+  color: var(--plum);
+  font: var(--body);
+  letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { height: 100%; }
+
+h1 { font: var(--h1); margin: 0; }
+h2 { font: var(--h2); margin: 0; }
+h3 { font: var(--h3); margin: 0; }
+p { margin: 0; }
+
+a { color: var(--tangerine-text); font-weight: 600; }
+
+.num { font-variant-numeric: tabular-nums; }
+
+/* Visible 3 px plum focus ring with a 2 px offset (PLAN §5.10). */
+:focus-visible {
+  outline: 3px solid var(--plum);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+.icon {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  user-select: none;
+}
+
+.card {
+  background: var(--white);
+  border: 2px solid var(--plum);
+  border-radius: var(--radius-card);
+}
+
+input, select {
+  font: var(--body);
+  color: var(--plum);
+  background: var(--white);
+  border: 2px solid var(--plum);
+  border-radius: var(--radius-input);
+  padding: 10px 14px;
+  min-height: 48px;
+}
+
+label { font-weight: 600; }
+
+kbd {
+  font: 600 14px/1 var(--font);
+  border: 2px solid var(--plum);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: var(--white);
+}
+
+/* Reduced motion: no springs, no rotation animations. */
+[data-reduced-motion='on'] *,
+[data-reduced-motion='on'] *::before,
+[data-reduced-motion='on'] *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}

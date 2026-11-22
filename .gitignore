@@ -1,0 +1,10 @@
+node_modules/
+out/
+dist/
+.env
+*.log
+test-results/
+playwright-report/
+probe/logs/
+synthetic-probe.jsonl
+synthetic-probe.report.md

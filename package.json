@@ -1,0 +1,46 @@
+{
+  "name": "browup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Practice and feedback for sign-language facial grammar. Built on the Presage SmartSpectra SDK.",
+  "main": "out/main/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:unreviewed": "electron-vite dev -- --dev-unreviewed",
+    "build": "electron-vite build",
+    "start": "electron-vite build && electron .",
+    "start:unreviewed": "electron-vite build && electron . --dev-unreviewed",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "electron-vite build && playwright test",
+    "fixtures": "tsx scripts/make-fixtures.ts",
+    "probe": "electron-vite build && electron . --probe --dev-unreviewed",
+    "probe:analyze": "tsx probe/analyze.ts",
+    "probe:synthetic": "tsx scripts/synth-probe-log.ts synthetic-probe.jsonl && tsx probe/analyze.ts synthetic-probe.jsonl"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "@fontsource/lexend": "^5.3.0",
+    "@smartspectra/node-sdk": "^3.5.0",
+    "ajv": "^8.20.0",
+    "material-symbols": "^0.49.0",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.46"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^22.20.5",
+    "@vitejs/plugin-vue": "^6.0.11",
+    "electron": "^45.4.1",
+    "electron-vite": "^6.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8",
+    "vitest": "^4.1.12",
+    "vue-tsc": "^3.3.14"
+  }
+}
