@@ -59,6 +59,7 @@ It is visual-first: no sound anywhere, every instruction is text plus a diagram,
 **Narrated walkthrough (3 min).** It plays the replay bundled with the app: synthetic face data from a model, run through the same engine the live camera feeds, so every verdict appears on cue, including NOT SEEN. The narration is **Kokoro-82M**, an open-source voice model run offline. Captions are burned in, so it works with the sound off.
 
 {% youtube AT35mbAnmrA %}
+
 - 🎥 **Live attempts on my webcam:** _VIDEO LINK_
 - 💻 **Code and setup:** https://github.com/unicorn-9-spec/browup
 
