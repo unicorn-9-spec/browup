@@ -38,6 +38,12 @@ const api = {
   exportMarkdown: (text: string, suggested: string) => invoke('export:markdown', text, suggested),
   paths: () => invoke('app:paths'),
   flags: () => invoke('app:flags'),
+  demo: {
+    start: (ext: 'mp4' | 'webm') => invoke('demo:start', ext),
+    chunk: (bytes: Uint8Array) => invoke('demo:chunk', bytes),
+    stop: () => invoke('demo:stop'),
+    show: (path: string) => invoke('demo:show', path),
+  },
   onShutdown: (fn: () => void | Promise<void>) => {
     ipcRenderer.on('app:shutdown', async () => {
       try { await fn(); } finally { ipcRenderer.send('app:shutdown-done'); }

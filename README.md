@@ -39,7 +39,7 @@ npm run demo:fresh         # same, with a clean first-run profile
 npm run demo
 ```
 
-Recording a demo? See [docs/DEMO.md](docs/DEMO.md).
+Recording a demo? Run `npm run demo:record` and press **Ctrl+Shift+R**. This developer-only recorder saves the BrowUp window as an MP4 in `Videos\BrowUp demos\`; learners' builds never contain it. See [docs/DEMO.md](docs/DEMO.md).
 
 **Replay, no camera, no key.** On the Welcome screen, choose **Watch a replay**. It plays a bundled, clearly labelled *synthetic* session generated from a face model. For every prompt there is a common mistake and a correct production, so a judge can press <kbd>Space</kbd>, see **MISSING**, press <kbd>R</kbd> and see **HELD**. Nothing is saved.
 
@@ -105,7 +105,7 @@ The stamps are **HELD ✓**, **STARTED LATE**, **DROPPED AT END**, **NOT HELD** 
 
 ## Consent and data handling
 
-- The camera picture is shown only on this computer. It is never recorded, saved or sent.
+- The camera picture is shown only on this computer. It is never recorded, saved or sent. The only exception is the developer-only demo recorder (`npm run demo:record`), which a learner's build never contains.
 - BrowUp stores only your calibration (a few numbers), your results (prompt, marker, verdict, percentages) and settings. Delete them in Settings → Privacy.
 - SmartSpectra runs on your computer but checks its licence online. Telemetry is off.
 - There is no emotion reading, no identification and no score of fluency or ability: each verdict is about one marker in one sentence.

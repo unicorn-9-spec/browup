@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import Logo from './components/Logo.vue';
 import ChunkyButton from './components/ChunkyButton.vue';
+import DemoRecorder from './components/DemoRecorder.vue';
 import SettingsSheet from './views/SettingsSheet.vue';
 import Welcome from './views/Welcome.vue';
 import Consent from './views/Consent.vue';
@@ -106,6 +107,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
         </button>
       </nav>
       <div class="right">
+        <DemoRecorder v-if="app.flags.demoRecorder" />
         <span v-if="session.cameraOn" class="pill" role="status" data-testid="camera-pill">
           <span class="icon" aria-hidden="true">videocam</span> Camera on
         </span>

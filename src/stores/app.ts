@@ -13,7 +13,7 @@ export const CAMERA_VIEWS: ReadonlySet<View> = new Set(['setup', 'calibrate', 'l
 
 export const useApp = defineStore('app', () => {
   const view = ref<View>('welcome');
-  const flags = ref<AppFlags>({ probe: false, e2e: false, devUnreviewed: false });
+  const flags = ref<AppFlags>({ probe: false, e2e: false, devUnreviewed: false, demoRecorder: false });
   const packs = ref<PackListing[]>([]);
   const pack = shallowRef<Pack | null>(null);
   const packStatus = ref<'reviewed' | 'unreviewed' | null>(null);

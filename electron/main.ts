@@ -6,8 +6,8 @@
 // JSON files (settings, calibration profile, progress, optional numbers-only
 // recordings). No video is ever written anywhere.
 
-import { app, BrowserWindow, dialog, ipcMain, net, protocol, safeStorage, session } from 'electron';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, net, protocol, safeStorage, session, shell } from 'electron';
+import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, type WriteStream } from 'node:fs';
 import { join, normalize, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { checkPack, loadable, type PackCheck } from '../content/validate';
@@ -20,6 +20,9 @@ const FLAGS = {
   probe: process.argv.includes('--probe'),
   e2e: process.env.BROWUP_E2E === '1',
   devUnreviewed: process.argv.includes('--dev-unreviewed') || process.env.BROWUP_DEV_UNREVIEWED === '1',
+  /** Demo recorder (developer flag only, never in a learner's build): records
+   *  the BrowUp window to a local video file for the challenge demo. */
+  demoRecorder: process.argv.includes('--demo-recorder') || process.env.BROWUP_DEMO_RECORDER === '1',
 };
 
 if (process.env.BROWUP_USER_DATA) app.setPath('userData', process.env.BROWUP_USER_DATA);
@@ -112,9 +115,12 @@ function installPermissions(): void {
     const url = (details && 'requestingUrl' in details && details.requestingUrl) || wc?.getURL() || '';
     const types = (details as { mediaTypes?: string[] }).mediaTypes ?? [];
     const videoOnly = permission === 'media' && types.length > 0 && types.every((t) => t === 'video');
-    callback(videoOnly && allowedOrigin(url));
+    // Window capture is allowed only for the demo recorder (developer flag).
+    const demoCapture = permission === 'display-capture' && FLAGS.demoRecorder;
+    callback((videoOnly || demoCapture) && allowedOrigin(url));
   });
   session.defaultSession.setPermissionCheckHandler((_wc, permission, origin, details) => {
+    if (permission === 'display-capture') return FLAGS.demoRecorder && allowedOrigin(origin);
     if (permission !== 'media') return false;
     return allowedOrigin(origin) && (details as { mediaType?: string }).mediaType !== 'audio';
   });
@@ -380,5 +386,62 @@ app.whenReady().then(async () => {
   registerAppProtocol();
   installPermissions();
   installIpc();
+  installDemoRecorder();
   await createWindow();
 });
+
+// ── Demo recorder (developer flag --demo-recorder only) ────────────────────
+// Captures exactly one source — the BrowUp window itself (no other windows,
+// no screen, no audio) — and streams the encoded video to
+// Videos/BrowUp demos/ in one-second chunks, so memory stays flat.
+let demoStream: WriteStream | null = null;
+let demoPath = '';
+let demoBytes = 0;
+const demoDir = () => process.env.BROWUP_VIDEOS_DIR || join(app.getPath('videos'), 'BrowUp demos');
+
+function installDemoRecorder(): void {
+  if (!FLAGS.demoRecorder) return;
+  session.defaultSession.setDisplayMediaRequestHandler((req, callback) => {
+    if (!win || !allowedOrigin(req.frame?.url ?? '')) { callback({}); return; }
+    const id = win.getMediaSourceId();
+    desktopCapturer.getSources({ types: ['window'] })
+      .then((sources) => {
+        const own = sources.find((s) => s.id === id) ?? sources.find((s) => s.name === 'BrowUp');
+        if (own) callback({ video: own });
+        else callback({});
+      })
+      .catch(() => callback({}));
+  });
+  handle('demo:start', (_e, ext) => {
+    if (demoStream) throw new Error('already recording');
+    const safeExt = ext === 'mp4' ? 'mp4' : 'webm';
+    mkdirSync(demoDir(), { recursive: true });
+    demoPath = join(demoDir(), `browup-demo-${new Date().toISOString().replace(/[:.]/g, '-')}.${safeExt}`);
+    demoBytes = 0;
+    demoStream = createWriteStream(demoPath);
+    log('info', 'demo recording started');
+    return demoPath;
+  });
+  handle('demo:chunk', (_e, chunk) => {
+    if (!demoStream || !(chunk instanceof Uint8Array)) return false;
+    demoStream.write(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+    demoBytes += chunk.byteLength;
+    return true;
+  });
+  handle('demo:stop', () => finishDemo());
+  handle('demo:show', (_e, p) => {
+    if (typeof p === 'string' && normalize(p).startsWith(normalize(demoDir()))) shell.showItemInFolder(p);
+    return true;
+  });
+  app.on('before-quit', () => { void finishDemo(); });
+}
+
+function finishDemo(): Promise<{ path: string; bytes: number } | null> {
+  const s = demoStream;
+  if (!s) return Promise.resolve(null);
+  demoStream = null;
+  return new Promise((done) => s.end(() => {
+    log('info', `demo recording saved (${demoBytes} bytes)`);
+    done({ path: demoPath, bytes: demoBytes });
+  }));
+}

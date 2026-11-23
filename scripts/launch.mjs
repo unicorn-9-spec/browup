@@ -7,6 +7,7 @@
 //                                           Welcome → Consent → Setup → Calibrate,
 //                                           like a first install (key still read from .env)
 //   node scripts/launch.mjs --probe         Stage 1 face check
+//   node scripts/launch.mjs --record        adds the demo recorder (● Record demo, Ctrl+Shift+R)
 
 import { spawn } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
@@ -22,6 +23,8 @@ const appArgs = ['.'];
 
 if (args.includes('--unreviewed')) appArgs.push('--dev-unreviewed');
 if (args.includes('--probe')) appArgs.push('--probe', '--dev-unreviewed');
+// Built-in demo recorder (records the BrowUp window to Videos/BrowUp demos).
+if (args.includes('--record')) appArgs.push('--demo-recorder');
 if (args.includes('--fresh')) {
   env.BROWUP_USER_DATA = mkdtempSync(join(tmpdir(), 'browup-demo-'));
   console.log(`Fresh profile: ${env.BROWUP_USER_DATA}`);

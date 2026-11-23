@@ -6,8 +6,8 @@ All numbers here are measured. Nothing is estimated, and blanks stay blank until
 
 | Suite | Result |
 | --- | --- |
-| Unit (`npm test`) | **74 passed**. Covers marker rules on synthetic fixtures (correct, late start, early drop, dip, missing, hidden, blink storm, squint during a furrow, wrong marker) for yes/no, wh, negation, affirmation and topic; features; calibration; coverage; content schema and the reviewer rule; decoding; recording round trip; replay determinism; review scoring; capture timing; error mapping; privacy scans. |
-| End-to-end in replay (`npm run test:e2e`) | **11 passed**. Covers the keyboard-only lesson (MISSING → HELD on retry → NOT SEEN), negation, topic, mixed review, progress and export, reduced motion, layout at 1280×720 and 1920×1080, and refusal of an unreviewed pack. |
+| Unit (`npm test`) | **78 passed**. Covers marker rules on synthetic fixtures (correct, late start, early drop, dip, missing, hidden, blink storm, squint during a furrow, wrong marker) for yes/no, wh, negation, affirmation and topic; features; calibration; coverage; content schema and the reviewer rule; decoding; recording round trip; replay determinism; review scoring; capture timing; error mapping; privacy scans. |
+| End-to-end in replay (`npm run test:e2e`) | **12 passed**. Covers the demo recorder writing a real MP4 of the window; the keyboard-only lesson (MISSING → HELD on retry → NOT SEEN), negation, topic, mixed review, progress and export, reduced motion, layout at 1280×720 and 1920×1080, and refusal of an unreviewed pack. |
 | Replay fixture (`npm run fixtures`) | **59 of 59** synthetic clips give their intended verdict through the app's own pipeline. |
 
 The synthetic fixtures come from a face model, not a person. They prove the rules and the plumbing; they do **not** measure real-world accuracy. That comes from sections 2–4.

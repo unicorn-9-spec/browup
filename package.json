@@ -23,7 +23,9 @@
     "demo:unreviewed": "electron-vite build && node scripts/launch.mjs --unreviewed",
     "demo:fresh": "electron-vite build && node scripts/launch.mjs --unreviewed --fresh",
     "preflight": "tsx scripts/preflight.mts",
-    "review:approve": "node scripts/approve-review.mjs"
+    "review:approve": "node scripts/approve-review.mjs",
+    "demo:record": "electron-vite build && node scripts/launch.mjs --unreviewed --record",
+    "demo:record:fresh": "electron-vite build && node scripts/launch.mjs --unreviewed --record --fresh"
   },
   "engines": {
     "node": ">=20.19"

@@ -20,7 +20,7 @@ export interface PackListing {
   reviewer: { name: string; role: string; date: string; credit?: string } | null;
   unreviewedPrompts: number;
 }
-export interface AppFlags { probe: boolean; e2e: boolean; devUnreviewed: boolean }
+export interface AppFlags { probe: boolean; e2e: boolean; devUnreviewed: boolean; demoRecorder: boolean }
 
 export interface BrowUpBridge {
   sdkInfo(): Promise<{ available: boolean; error: string; platform: string }>;
@@ -52,6 +52,12 @@ export interface BrowUpBridge {
   exportMarkdown(text: string, suggested: string): Promise<string | null>;
   paths(): Promise<{ dataDir: string; files: string[] }>;
   flags(): Promise<AppFlags>;
+  demo: {
+    start(ext: 'mp4' | 'webm'): Promise<string>;
+    chunk(bytes: Uint8Array): Promise<boolean>;
+    stop(): Promise<{ path: string; bytes: number } | null>;
+    show(path: string): Promise<boolean>;
+  };
   onShutdown(fn: () => void | Promise<void>): void;
 }
 

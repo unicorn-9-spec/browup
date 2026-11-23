@@ -4,7 +4,7 @@
 // to save screenshots.
 
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -50,6 +50,8 @@ test('welcome: language choice, Start and replay; no camera yet', async () => {
   await expect(page.getByText('Practise the grammar on your face.')).toBeVisible();
   await expect(page.getByText('unreviewed draft')).toBeVisible();
   await expect(page.getByTestId('camera-pill')).toHaveCount(0);
+  // No recorder in a normal build.
+  await expect(page.getByTestId('demo-rec')).toHaveCount(0);
   await shot('01-welcome');
 });
 
@@ -182,5 +184,31 @@ test('an unreviewed pack is refused without the developer flag', async () => {
   } finally {
     await b.app.close();
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('demo recorder (developer flag): records the BrowUp window to a local video file', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'browup-e2e3-'));
+  const videos = mkdtempSync(join(tmpdir(), 'browup-videos-'));
+  const b = await launch({ BROWUP_DEV_UNREVIEWED: '1', BROWUP_DEMO_RECORDER: '1', BROWUP_VIDEOS_DIR: videos }, dir);
+  try {
+    await b.page.getByTestId('watch-replay').click();
+    await b.page.keyboard.press('Control+Shift+R');
+    await expect(b.page.getByTestId('demo-rec')).toContainText('REC', { timeout: 10_000 });
+    await b.page.getByTestId('set-yes-no').click();
+    await b.page.waitForTimeout(3000);
+    await b.page.getByTestId('demo-rec').click();
+    await expect(b.page.getByTestId('demo-saved')).toContainText('Saved', { timeout: 15_000 });
+    const files = readdirSync(videos);
+    expect(files).toHaveLength(1);
+    const f = join(videos, files[0]!);
+    expect(statSync(f).size).toBeGreaterThan(20_000);
+    const head = readFileSync(f).subarray(0, 12);
+    // MP4 ("ftyp" box) or WebM (EBML magic).
+    expect(head.includes(Buffer.from('ftyp')) || head.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))).toBe(true);
+  } finally {
+    await b.app.close();
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(videos, { recursive: true, force: true });
   }
 });

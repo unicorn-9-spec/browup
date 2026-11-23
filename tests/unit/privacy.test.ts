@@ -67,10 +67,29 @@ describe('camera choice', () => {
 });
 
 describe('no video is written anywhere', () => {
-  test('no MediaRecorder, canvas export or image capture in the app', () => {
+  // The demo recorder is the single, flag-gated exception (developer only).
+  const DEMO = /src[\\/]demo[\\/]recorder\.ts$/;
+  test('no MediaRecorder, screen capture, canvas export or image capture outside the demo recorder', () => {
     for (const { p, c } of all) {
-      expect(/MediaRecorder|toDataURL|toBlob|ImageCapture|captureStream|getImageData/.test(c), p).toBe(false);
+      if (DEMO.test(p)) continue;
+      expect(/MediaRecorder|getDisplayMedia|toDataURL|toBlob|ImageCapture|captureStream|getImageData/.test(c), p).toBe(false);
     }
+  });
+
+  test('the demo recorder exists only behind the --demo-recorder flag', () => {
+    const appVue = code('src/App.vue');
+    expect(appVue).toMatch(/<DemoRecorder v-if="app\.flags\.demoRecorder"/);
+    const users = all.filter(({ p, c }) => !DEMO.test(p) && /demo\/recorder/.test(c)).map((x) => x.p.replace(/\\/g, '/'));
+    expect(users).toEqual(['src/components/DemoRecorder.vue']);
+    const main = code('electron/main.ts');
+    // Window capture permission and the capture handler both require the flag.
+    expect(main).toMatch(/permission === 'display-capture' && FLAGS\.demoRecorder/);
+    expect(main).toMatch(/function installDemoRecorder\(\): void \{\s*if \(!FLAGS\.demoRecorder\) return;/);
+    // Only the app's own window is handed over, never the screen.
+    expect(main).toMatch(/getSources\(\{ types: \['window'\] \}\)/);
+    expect(main).not.toMatch(/types: \[[^\]]*'screen'/);
+    // No audio in the recording.
+    expect(code('src/demo/recorder.ts')).toMatch(/audio: false/);
   });
 
   test('main-process writes are limited to known JSON/JSONL/Markdown files', () => {

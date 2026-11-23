@@ -1,6 +1,6 @@
 # Privacy, consent and data handling
 
-BrowUp shows a live mirror but never records it. It keeps a calibration profile and verdict counts, and it never interprets the learner's face as emotion.
+BrowUp shows a live mirror but never records it. (The one exception is a developer-only demo recorder, row 11a, that exists only when the developer launches it to film the challenge demo.) It keeps a calibration profile and verdict counts, and it never interprets the learner's face as emotion.
 
 | # | Topic | What BrowUp does | Where |
 | --: | --- | --- | --- |
@@ -15,6 +15,7 @@ BrowUp shows a live mirror but never records it. It keeps a calibration profile 
 | 9 | Deletion | Settings → Privacy: **Delete my progress** (progress, recordings, probe logs), **Reset calibration**, **Remove API key**. The file paths are listed in that sheet. | `src/views/SettingsSheet.vue` |
 | 10 | API key | Held in the main process with `safeStorage`. It is handed to the renderer only for the SDK constructor (the SDK forwards it to main), never written to renderer storage, and never logged (`redact`, tested). | `electron/main.ts` |
 | 11 | Logging | Event names only, with the key always redacted. | `electron/main.ts` |
+| 11a | Demo recorder | **Developer flag only** (`--demo-recorder`, via `npm run demo:record`), so it never exists in a learner's build. When the developer presses Record, the main process hands over exactly one capture source, the BrowUp window (never the screen, never audio). The video is written in one-second chunks to `Videos/BrowUp demos/` on this computer and never uploaded, and a red REC timer is visible the whole time. A unit test checks that recording code exists only in `src/demo/recorder.ts`, that only the flagged top-bar control uses it, and that main grants window capture only with the flag. | `src/demo/recorder.ts`, `electron/main.ts` |
 | 12 | Shutdown | Stop, Esc, leaving a camera screen, closing the window or quitting all do the same: stop the camera tracks first (light off at once), then `sdk.stop()` (main runs `stopAsync()`), then `destroy()`. The mirror goes blank. | `src/sensing/sdk.ts`, `electron/main.ts` |
 
 ## What a recording contains (opt-in replays and the probe log)

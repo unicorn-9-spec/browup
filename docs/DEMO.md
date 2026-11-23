@@ -47,17 +47,22 @@ If time is short, skip this step: the defaults work and calibration still person
   and record with `npm run demo`. The UNREVIEWED banner disappears; credit them in the README.
 - **If not yet:** record with `npm run demo:unreviewed`. The UNREVIEWED banner stays on screen, which is honest and is what the rules ask for. Say "content pending review by a Deaf signer" in the voice-over or captions.
 
-## 5. Launch
+## 5. Launch with the built-in recorder
 
 ```bash
-npm run demo:fresh       # clean first-run profile: Welcome → Consent → Setup → Calibrate
+npm run demo:record:fresh   # clean first-run profile + recorder: Welcome → Consent → Setup → Calibrate
 # or
-npm run demo:unreviewed  # keeps your saved calibration and progress
+npm run demo:record         # keeps your saved calibration and progress, + recorder
 ```
 
 The key comes from `.env`, so Setup already shows "A key is saved".
 
-Start the screen recorder (OBS, or Win+Alt+R for Xbox Game Bar) on the BrowUp window at 1440×900 or larger.
+**Recording:** press **Ctrl+Shift+R**, or click **● Record demo** in the top bar. The button turns red and shows **REC 00:00**. Press Ctrl+Shift+R again to stop. The video is saved as an **MP4** in `Videos\BrowUp demos\`, and a note under the button gives the file name with **Show in folder**.
+
+- It records **only the BrowUp window**, the mirror and all, with no other windows, no sound and nothing uploaded. Keep the window at 1440×900 or larger, or maximise it.
+- You can record several takes; each one is a separate file.
+- The recorder exists only with these `demo:record` commands. Learners never see it, and BrowUp's "never recorded" promise stays true for them.
+- Prefer OBS or Xbox Game Bar (Win+Alt+R)? They still work with `npm run demo:unreviewed`.
 
 ## 6. Storyboard
 
