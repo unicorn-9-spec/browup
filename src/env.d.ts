@@ -54,7 +54,7 @@ export interface BrowUpBridge {
   flags(): Promise<AppFlags>;
   demo: {
     start(ext: 'mp4' | 'webm'): Promise<string>;
-    chunk(bytes: Uint8Array): Promise<boolean>;
+    chunk(bytes: Uint8Array): Promise<number | false>;
     stop(): Promise<{ path: string; bytes: number } | null>;
     show(path: string): Promise<boolean>;
   };

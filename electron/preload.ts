@@ -40,7 +40,7 @@ const api = {
   flags: () => invoke('app:flags'),
   demo: {
     start: (ext: 'mp4' | 'webm') => invoke('demo:start', ext),
-    chunk: (bytes: Uint8Array) => invoke('demo:chunk', bytes),
+    chunk: (bytes: Uint8Array) => invoke('demo:chunk', bytes),  // resolves to total bytes written
     stop: () => invoke('demo:stop'),
     show: (path: string) => invoke('demo:show', path),
   },

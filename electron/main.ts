@@ -401,14 +401,15 @@ const demoDir = () => process.env.BROWUP_VIDEOS_DIR || join(app.getPath('videos'
 
 function installDemoRecorder(): void {
   if (!FLAGS.demoRecorder) return;
+  // Hand over exactly BrowUp's own window, matched by its media source id
+  // (never the screen, never another window).
   session.defaultSession.setDisplayMediaRequestHandler((req, callback) => {
     if (!win || !allowedOrigin(req.frame?.url ?? '')) { callback({}); return; }
     const id = win.getMediaSourceId();
-    desktopCapturer.getSources({ types: ['window'] })
+    desktopCapturer.getSources({ types: ['window'], thumbnailSize: { width: 0, height: 0 } })
       .then((sources) => {
-        const own = sources.find((s) => s.id === id) ?? sources.find((s) => s.name === 'BrowUp');
-        if (own) callback({ video: own });
-        else callback({});
+        const own = sources.find((s) => s.id === id) ?? sources.find((s) => s.id.split(':')[1] === id.split(':')[1]);
+        callback(own ? { video: own } : {});
       })
       .catch(() => callback({}));
   });
@@ -426,7 +427,7 @@ function installDemoRecorder(): void {
     if (!demoStream || !(chunk instanceof Uint8Array)) return false;
     demoStream.write(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
     demoBytes += chunk.byteLength;
-    return true;
+    return demoBytes;
   });
   handle('demo:stop', () => finishDemo());
   handle('demo:show', (_e, p) => {
@@ -442,6 +443,8 @@ function finishDemo(): Promise<{ path: string; bytes: number } | null> {
   demoStream = null;
   return new Promise((done) => s.end(() => {
     log('info', `demo recording saved (${demoBytes} bytes)`);
+    // Nothing captured (e.g. the window was hidden): leave no empty file.
+    if (demoBytes === 0) { rmSync(demoPath, { force: true }); done({ path: '', bytes: 0 }); return; }
     done({ path: demoPath, bytes: demoBytes });
   }));
 }

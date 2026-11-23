@@ -85,8 +85,9 @@ describe('no video is written anywhere', () => {
     // Window capture permission and the capture handler both require the flag.
     expect(main).toMatch(/permission === 'display-capture' && FLAGS\.demoRecorder/);
     expect(main).toMatch(/function installDemoRecorder\(\): void \{\s*if \(!FLAGS\.demoRecorder\) return;/);
-    // Only the app's own window is handed over, never the screen.
-    expect(main).toMatch(/getSources\(\{ types: \['window'\] \}\)/);
+    // Only BrowUp's own window is handed over (by its id), never the screen.
+    expect(main).toMatch(/getSources\(\{ types: \['window'\]/);
+    expect(main).toMatch(/s\.id === id/);
     expect(main).not.toMatch(/types: \[[^\]]*'screen'/);
     // No audio in the recording.
     expect(code('src/demo/recorder.ts')).toMatch(/audio: false/);

@@ -29,6 +29,8 @@ export class DemoRecorder {
   state: RecorderState = 'idle';
   startedAt = 0;
   path = '';
+  /** Bytes written to disk so far (shown live, so a stalled capture is visible). */
+  bytes = 0;
 
   constructor(private readonly onChange: (r: DemoRecorder) => void) {}
 
@@ -43,17 +45,24 @@ export class DemoRecorder {
     this.set('starting');
     try {
       // The main process answers this with the BrowUp window as the only source.
-      this.stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
+      this.stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30, width: { ideal: window.innerWidth * devicePixelRatio }, height: { ideal: window.innerHeight * devicePixelRatio } },
+        audio: false,
+      });
       const mimeType = MIME_PREFERENCE.find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
       this.path = await bridge.demo.start(mimeType.startsWith('video/mp4') ? 'mp4' : 'webm');
       const rec = new MediaRecorder(this.stream, { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 8_000_000 });
       rec.ondataavailable = (e) => {
         if (!e.data.size) return;
         // Keep chunks in order; each is written to disk as it arrives.
-        this.queue = this.queue.then(async () => bridge.demo.chunk(new Uint8Array(await e.data.arrayBuffer())));
+        this.queue = this.queue.then(async () => {
+          const total = await bridge.demo.chunk(new Uint8Array(await e.data.arrayBuffer()));
+          if (typeof total === 'number') { this.bytes = total; this.onChange(this); }
+        });
       };
       // If the capture ends on its own (window closed), save what we have.
       this.stream.getVideoTracks()[0]?.addEventListener('ended', () => { void this.stop(); });
+      this.bytes = 0;
       rec.start(1000);
       this.rec = rec;
       this.startedAt = Date.now();

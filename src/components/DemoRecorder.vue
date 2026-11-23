@@ -12,7 +12,8 @@ const state = ref<RecorderState>('idle');
 const elapsed = ref(0);
 const saved = ref<{ path: string; bytes: number } | null>(null);
 const error = ref('');
-const rec = new DemoRecorder((r) => { state.value = r.state; });
+const bytes = ref(0);
+const rec = new DemoRecorder((r) => { state.value = r.state; bytes.value = r.bytes; });
 let timer: ReturnType<typeof setInterval> | null = null;
 
 const clock = computed(() => {
@@ -33,9 +34,15 @@ async function toggle(): Promise<void> {
     }
   } else if (state.value === 'recording') {
     if (timer) clearInterval(timer);
-    saved.value = await rec.stop();
+    const r = await rec.stop();
     elapsed.value = 0;
-    app.announce('Demo recording saved.');
+    if (r && r.bytes > 0) {
+      saved.value = r;
+      app.announce('Demo recording saved.');
+    } else {
+      error.value = 'Nothing was captured, so no file was saved. Keep the BrowUp window visible (not minimised or covered) while recording, then try again — or use Win+Alt+R.';
+      app.announce(error.value);
+    }
   }
 }
 
@@ -73,7 +80,7 @@ onBeforeUnmount(() => {
       @click="toggle"
     >
       <span class="dot" aria-hidden="true" />
-      <template v-if="state === 'recording'"><span class="num">REC {{ clock }}</span></template>
+      <template v-if="state === 'recording'"><span class="num">REC {{ clock }} · {{ (bytes / 1e6).toFixed(1) }} MB</span></template>
       <template v-else-if="state === 'saving'">Saving…</template>
       <template v-else-if="state === 'starting'">Starting…</template>
       <template v-else>Record demo</template>

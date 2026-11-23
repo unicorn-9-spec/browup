@@ -187,12 +187,19 @@ test('an unreviewed pack is refused without the developer flag', async () => {
   }
 });
 
+// Window capture on Windows only gets frames while the window is actually on
+// screen, which automated runs do not always guarantee: allow retries.
+test.describe('demo recorder', () => {
+  test.describe.configure({ retries: 2 });
 test('demo recorder (developer flag): records the BrowUp window to a local video file', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'browup-e2e3-'));
   const videos = mkdtempSync(join(tmpdir(), 'browup-videos-'));
   const b = await launch({ BROWUP_DEV_UNREVIEWED: '1', BROWUP_DEMO_RECORDER: '1', BROWUP_VIDEOS_DIR: videos }, dir);
   try {
     await b.page.getByTestId('watch-replay').click();
+    // Window capture only receives frames while the window is on screen.
+    await b.app.evaluate(({ BrowserWindow }) => { const w = BrowserWindow.getAllWindows()[0]!; w.setAlwaysOnTop(true); w.show(); w.focus(); });
+    await b.page.waitForTimeout(500);
     await b.page.keyboard.press('Control+Shift+R');
     await expect(b.page.getByTestId('demo-rec')).toContainText('REC', { timeout: 10_000 });
     await b.page.getByTestId('set-yes-no').click();
@@ -211,4 +218,5 @@ test('demo recorder (developer flag): records the BrowUp window to a local video
     rmSync(dir, { recursive: true, force: true });
     rmSync(videos, { recursive: true, force: true });
   }
+});
 });
