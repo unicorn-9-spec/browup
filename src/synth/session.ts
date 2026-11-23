@@ -4,7 +4,7 @@
 // pipeline produces it before writing the file.
 
 import { CAPTURE, COVERAGE } from '../../config/thresholds';
-import { buildProfile, furrowInner, measureStep, neutralBaseline, thresholdsFor, type CalStep } from '../face/calibration';
+import { buildProfile, furrowInner, measureStep, neutralBaseline, pitchSlope, thresholdsFor, type CalStep } from '../face/calibration';
 import { FeatureExtractor } from '../face/features';
 import { promptTiming } from '../lesson/timing';
 import { feedAll } from '../sensing/pipeline';
@@ -29,8 +29,9 @@ export function calibrateSynthetic(o: StreamOptions = {}, t0 = SYNTH_T0 - 120e6)
   const furrowFrames = run((s) => face({ lower: 0.12 * bump(s), pull: 0.1 * bump(s) }), 4.5, t0 + 20e6);
   steps.furrow = measureStep('furrow', furrowFrames, b, neutral.mad!);
   steps.shake = measureStep('shake', run((s) => face({ yaw: 14 * Math.sin(2 * Math.PI * s) }), 3, t0 + 30e6), b, neutral.mad!);
-  steps.nod = measureStep('nod', run((s) => face({ pitch: 10 * Math.sin(2 * Math.PI * s) }), 3, t0 + 40e6), b, neutral.mad!);
-  return buildProfile(neutral, steps, furrowInner(furrowFrames, b), new Date('2026-11-22T12:00:00Z'))!;
+  const nodFrames = run((s) => face({ pitch: 10 * Math.sin(2 * Math.PI * s) }), 3, t0 + 40e6);
+  steps.nod = measureStep('nod', nodFrames, b, neutral.mad!);
+  return buildProfile(neutral, steps, furrowInner(furrowFrames, b), new Date('2026-11-22T12:00:00Z'), pitchSlope(nodFrames, b))!;
 }
 
 export interface PromptLike {

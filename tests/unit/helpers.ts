@@ -1,7 +1,7 @@
 // Test helpers: synthetic attempts run through the real pipeline
 // (synthetic landmarks → FeatureExtractor → judge).
 
-import { buildProfile, furrowInner, measureStep, neutralBaseline, thresholdsFor, type CalStep } from '../../src/face/calibration';
+import { buildProfile, furrowInner, measureStep, neutralBaseline, pitchSlope, thresholdsFor, type CalStep } from '../../src/face/calibration';
 import { FeatureExtractor } from '../../src/face/features';
 import { feedAll } from '../../src/sensing/pipeline';
 import { NEUTRAL, synthStream, type FaceState, type StreamOptions } from '../../src/synth/face';
@@ -29,8 +29,9 @@ export function calibrate(sizes: { raise?: number; lower?: number; pull?: number
   const furrowFrames = run((s) => face({ lower: lower * bump(s), pull: pull * bump(s) }), 4.5, T0 + 20e6);
   steps.furrow = measureStep('furrow', furrowFrames, b, neutral.mad!);
   steps.shake = measureStep('shake', run((s) => face({ yaw: shake * Math.sin(2 * Math.PI * s) }), 3, T0 + 30e6), b, neutral.mad!);
-  steps.nod = measureStep('nod', run((s) => face({ pitch: nod * Math.sin(2 * Math.PI * s) }), 3, T0 + 40e6), b, neutral.mad!);
-  return buildProfile(neutral, steps, furrowInner(furrowFrames, b))!;
+  const nodFrames = run((s) => face({ pitch: nod * Math.sin(2 * Math.PI * s) }), 3, T0 + 40e6);
+  steps.nod = measureStep('nod', nodFrames, b, neutral.mad!);
+  return buildProfile(neutral, steps, furrowInner(furrowFrames, b), new Date(), pitchSlope(nodFrames, b))!;
 }
 
 let cached: Profile | null = null;

@@ -3,7 +3,7 @@
 // (MAD) and the size of their own deliberate movements, so thresholds scale
 // to faces that move more or less. Pure functions.
 
-import { CALIBRATION, DEFAULTS, PERSONAL } from '../../config/thresholds';
+import { CALIBRATION, DEFAULTS, FEATURES, PERSONAL } from '../../config/thresholds';
 import type { FeatureFrame, Profile, Sensitivity, Thresholds } from '../types';
 import { pitchDeg, yawDeg } from './headPose';
 import { mad, median, quantile } from './stats';
@@ -140,6 +140,25 @@ export function measureStep(step: Exclude<CalStep, 'neutral'>, frames: readonly 
   }
 }
 
+/**
+ * Brow-height change per degree of head pitch, from the nod step (brows
+ * neutral, head moving ±10°): least squares through the origin on frames
+ * with |pitch| ≥ 2°. Returns null when the nod was too small to measure.
+ * Clamped to [0, PITCH_BROW_SLOPE_MAX].
+ */
+export function pitchSlope(frames: readonly FeatureFrame[], b: Baseline): number | null {
+  const use = frames.filter(browUsable);
+  const pts = use.map((f) => ({
+    p: pitchDeg(f.raw!.pitchRatio, b.pitchRatio),
+    y: (f.raw!.brow - b.brow) / Math.abs(b.brow),
+  })).filter((q) => Math.abs(q.p) >= 2);
+  if (pts.length < 10) return null;
+  const ps = pts.map((q) => q.p);
+  if ((quantile(ps, 0.95) ?? 0) - (quantile(ps, 0.05) ?? 0) < FEATURES.PITCH_SLOPE_MIN_RANGE_DEG) return null;
+  const k = pts.reduce((s, q) => s + q.p * q.y, 0) / pts.reduce((s, q) => s + q.p * q.p, 0);
+  return Number.isFinite(k) ? Math.min(FEATURES.PITCH_BROW_SLOPE_MAX, Math.max(0, k)) : null;
+}
+
 /** The inner-brow pull during the furrow step (fraction, positive). */
 export function furrowInner(frames: readonly FeatureFrame[], b: Baseline): number {
   const v = relSeries(frames, b).inner.map((p) => -p.v);
@@ -151,6 +170,7 @@ export function buildProfile(
   steps: Partial<Record<Exclude<CalStep, 'neutral'>, StepMeasure>>,
   innerPull: number,
   now = new Date(),
+  browPitchSlope: number | null = null,
 ): Profile | null {
   if (!neutral.ok || !neutral.baseline || !neutral.mad) return null;
   const weak = (Object.entries(steps) as [CalStep, StepMeasure][]).filter(([, m]) => m.weak).map(([k]) => k);
@@ -172,6 +192,7 @@ export function buildProfile(
       nodDeg: pick('nod', DEFAULTS.NOD_AMPLITUDE_DEG * 2),
     },
     weak,
+    browPitchSlope: browPitchSlope ?? FEATURES.PITCH_BROW_SLOPE,
   };
 }
 

@@ -10,7 +10,8 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { DEFAULTS, EXPRESSIONS } from '../config/thresholds';
+import { DEFAULTS, EXPRESSIONS, FEATURES } from '../config/thresholds';
+import { pitchDeg } from '../src/face/headPose';
 import { neutralBaseline } from '../src/face/calibration';
 import { applyBlinkMask, FeatureExtractor, resampleWindow } from '../src/face/features';
 import { browBothReferences } from '../src/face/geometry';
@@ -99,6 +100,7 @@ out.push(`- Inner-brow gap MAD at rest: ${pct(neutral.mad!.inner)}`, '');
 
 // ── Agreement trials ───────────────────────────────────────────────────
 const trials: AgreementTrial[] = [];
+const trialStats: { label: string; brow: number; inner: number; agrees: boolean; surprise: number; anger: number }[] = [];
 const sep: Record<'raise' | 'neutral' | 'furrow', { ec: number[]; el: number[] }> = { raise: { ec: [], el: [] }, neutral: { ec: [], el: [] }, furrow: { ec: [], el: [] } };
 const base = neutral.baseline!;
 const elBase = median(neutralFrames.map((f) => pointsAt.get(f.t)?.eyelid ?? NaN))!;
@@ -111,11 +113,17 @@ for (const p of phases.filter((q) => q.phase === 'agree' && q.label !== 'rest'))
   const label = p.label as 'raise' | 'furrow' | 'neutral';
   const brow = quantile(fs.map((f) => f.browRel), label === 'furrow' ? 0.2 : 0.8)!;
   const inner = quantile(fs.map((f) => f.innerRel), 0.2)!;
+  // Same rules as the verdict engine (defaults; calibration would personalise
+  // them). Neutral = neither marker present.
+  const isFurrow = (b: number, i: number) => b <= -DEFAULTS.LOWER_FRACTION && i <= -DEFAULTS.INNER_FRACTION;
+  const browHi = quantile(fs.map((f) => f.browRel), 0.8)!;
+  const browLo = quantile(fs.map((f) => f.browRel), 0.2)!;
   const landmarkAgrees = label === 'raise' ? brow >= DEFAULTS.RAISE_FRACTION
-    : label === 'furrow' ? brow <= -DEFAULTS.LOWER_FRACTION && inner <= -DEFAULTS.INNER_FRACTION
-      : Math.abs(brow) < DEFAULTS.RAISE_FRACTION;
+    : label === 'furrow' ? isFurrow(brow, inner)
+      : browHi < DEFAULTS.RAISE_FRACTION && !isFurrow(browLo, inner);
   const ex = exprs.filter((e) => e.t >= from && e.t < to);
   trials.push({ label, landmarkAgrees, surprise: Math.max(0, ...ex.map((e) => e.surprise)), anger: Math.max(0, ...ex.map((e) => e.anger)) });
+  trialStats.push({ label, brow, inner, agrees: landmarkAgrees, surprise: trials[trials.length - 1]!.surprise, anger: trials[trials.length - 1]!.anger });
   for (const f of fs) {
     const b = pointsAt.get(f.t);
     if (!b) continue;
@@ -139,6 +147,18 @@ if (sep.raise.ec.length && sep.neutral.ec.length) {
   out.push(`Recommendation: \`FEATURES.BROW_REFERENCE = '${rc + fc >= rl + fl ? 'eyeCorners' : 'eyelid'}'\` (larger total separation).`, '');
 } else out.push('Not enough agreement trials to compare.', '');
 
+// Per-label sizes of the movements the person actually made (what the
+// thresholds must catch). Brow: q80 for raise/neutral, q20 for furrow.
+out.push('## Your movements, by cue', '', '| Cue | Trials | Landmarks agree | Brow height (median) | Inner-brow gap (median) |', '| --- | --: | --: | --: | --: |');
+for (const l of ['raise', 'furrow', 'neutral'] as const) {
+  const g = trialStats.filter((t) => t.label === l);
+  const brow = median(g.map((t) => t.brow));
+  const inner = median(g.map((t) => t.inner));
+  out.push(`| ${l} | ${g.length} | ${g.filter((t) => t.agrees).length} | ${brow === null ? '—' : (brow * 100).toFixed(1) + '%'} | ${inner === null ? '—' : (inner * 100).toFixed(1) + '%'} |`);
+}
+const pctl = (l: string, k: 'brow' | 'inner', q: number) => quantile(trialStats.filter((t) => t.label === l).map((t) => t[k]), q);
+out.push('', `Raise trials, 25th percentile brow height: ${fx((pctl('raise', 'brow', 0.25) ?? NaN) * 100, 1)}%. Furrow trials, 75th percentile brow height: ${fx((pctl('furrow', 'brow', 0.75) ?? NaN) * 100, 1)}% and inner gap ${fx((pctl('furrow', 'inner', 0.75) ?? NaN) * 100, 1)}%. Neutral trials, 90th percentile |brow|: ${fx((quantile(trialStats.filter((t) => t.label === 'neutral').map((t) => Math.abs(t.brow)), 0.9) ?? NaN) * 100, 1)}%.`, '');
+
 out.push('## Expression agreement (decides EXPRESSIONS)', '');
 const landmarkOk = trials.filter((t) => t.landmarkAgrees).length;
 out.push(`- Trials: ${trials.length}; landmarks saw the asked-for state in ${landmarkOk} (${pct(landmarkOk / Math.max(1, trials.length))}).`);
@@ -150,14 +170,18 @@ if (exprs.length === 0) {
     const a = agreement(trials, s);
     if (a.share > best.share) best = { score: s, share: a.share };
   }
+  const medPeak = (l: string, k: 'surprise' | 'anger') => median(trials.filter((t) => t.label === l).map((t) => t[k])) ?? 0;
+  const rec = { surprise: Math.round((medPeak('raise', 'surprise') + medPeak('neutral', 'surprise')) / 2), anger: Math.round((medPeak('furrow', 'anger') + medPeak('neutral', 'anger')) / 2) };
   const now = agreement(trials);
-  out.push(`- Agreement at the configured score (${EXPRESSIONS.AGREE_SCORE}): **${pct(now.share)}** over ${now.n} trials (raise ${pct(now.byLabel.raise ?? NaN)}, furrow ${pct(now.byLabel.furrow ?? NaN)}, neutral ${pct(now.byLabel.neutral ?? NaN)}).`);
-  out.push(`- Best score threshold: ${best.score} → ${pct(best.share)}.`);
+  const recA = agreement(trials, rec);
+  out.push(`- Agreement at the configured scores (SURPRISE ≥ ${EXPRESSIONS.SURPRISE_SCORE}, ANGRY ≥ ${EXPRESSIONS.ANGER_SCORE}): **${pct(now.share)}** over ${now.n} trials (raise ${pct(now.byLabel.raise ?? NaN)}, furrow ${pct(now.byLabel.furrow ?? NaN)}, neutral ${pct(now.byLabel.neutral ?? NaN)}).`);
+  out.push(`- Midpoint scores for this face: SURPRISE ${rec.surprise}, ANGRY ${rec.anger} → ${pct(recA.share)}. (Single shared score: best ${best.score} → ${pct(best.share)}.)`);
+  best = { score: best.score, share: Math.max(now.share, recA.share) };
   const med = (l: string, k: 'surprise' | 'anger') => fx(median(trials.filter((t) => t.label === l).map((t) => t[k])), 0);
   out.push(`- Median peak SURPRISE: raise ${med('raise', 'surprise')}, neutral ${med('neutral', 'surprise')}; median peak ANGRY: furrow ${med('furrow', 'anger')}, neutral ${med('neutral', 'anger')}.`);
   const keep = best.share >= EXPRESSIONS.KEEP_IF_AGREEMENT;
   out.push('', keep
-    ? `**Recommendation: keep EXPRESSIONS** as a second vote — set \`EXPRESSIONS.MODE = 'on'\` and \`AGREE_SCORE = ${best.score}\`.`
+    ? `**Recommendation: keep EXPRESSIONS** as a second vote — \`EXPRESSIONS.MODE = 'on'\`, \`SURPRISE_SCORE = ${rec.surprise}\`, \`ANGER_SCORE = ${rec.anger}\`.`
     : `**Recommendation: drop EXPRESSIONS** (${pct(best.share)} < ${pct(EXPRESSIONS.KEEP_IF_AGREEMENT)}) — set \`EXPRESSIONS.MODE = 'off'\` and confirm eligibility with Presage.`, '');
 }
 
@@ -190,6 +214,23 @@ if (bp) {
   out.push('## Blink test (still brows, rapid blinks)', '', `- Blink samples flagged by the SDK: ${blinkEvents}`);
   out.push(`- Frames that would read as a raise without the blink mask: ${unmaskedRaise} of ${total}`);
   out.push(`- After the ±2-frame mask: **${maskedRaise}** (must be 0) — ${pct(masked.filter((f) => inB(f) && !f.validBrow).length / Math.max(1, total))} of frames masked`, '');
+}
+
+// Head-pitch effect on brow height (uncorrected), from clean rest periods:
+// the opening neutral, rests between signed sentences, and the blink phase.
+// (Neutral trials straight after a furrow cue are excluded: the brows have
+// not relaxed yet, which inflates the slope.)
+const pitchPts: { p: number; y: number }[] = [];
+for (const ph of phases.filter((q) => q.phase === 'neutral' || q.phase === 'blink' || (q.phase === 'occlusion' && q.label === 'rest'))) {
+  const fs = masked.filter((f) => f.t >= ph.r + 500_000 && f.t < ph.r + ph.seconds * 1e6 && f.validBrow && f.raw);
+  if (fs.length < 5) continue;
+  pitchPts.push({ p: median(fs.map((f) => pitchDeg(f.raw!.pitchRatio, base.pitchRatio)))!, y: median(fs.map((f) => (f.raw!.brow - base.brow) / Math.abs(base.brow)))! });
+}
+if (pitchPts.length >= 5) {
+  const k = pitchPts.reduce((s, q) => s + q.p * q.y, 0) / pitchPts.reduce((s, q) => s + q.p * q.p, 0);
+  const ps = pitchPts.map((q) => q.p);
+  out.push('## Head pitch and brow height', '', `- Rest periods spanned pitch ${fx(Math.min(...ps), 1)}° to ${fx(Math.max(...ps), 1)}°; uncorrected brow height changes **${fx(k * 100, 2)}% per degree** (through-origin fit).`);
+  out.push(`- The app corrects for this (\`FEATURES.PITCH_BROW_SLOPE\` = ${fx(FEATURES.PITCH_BROW_SLOPE * 100, 1)}%/°, measured per learner in calibration's nod step). Figures above already include the correction.`, '');
 }
 
 out.push('## Thresholds to review', '', `Current defaults: raise ${pct(DEFAULTS.RAISE_FRACTION)}, lower ${pct(DEFAULTS.LOWER_FRACTION)}, inner ${pct(DEFAULTS.INNER_FRACTION)}, MAD × ${DEFAULTS.MAD_MULTIPLIER}. Resting MAD × 2.5 = ${pct(neutral.mad!.brow * 2.5)}.`, '');

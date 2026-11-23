@@ -41,9 +41,7 @@ const unsub = faceSession.on({
   frame(f) {
     lastFrameAt = performance.now();
     lastValid = f.validBrow || f.validHead;
-    if (!lastValid) {
-      hiddenWhy.value = f.invalid === 'blink' ? '' : f.invalid === 'faceTurned' ? 'Face the camera' : 'Can’t see your brows';
-    }
+    if (!lastValid) hiddenWhy.value = HIDDEN_WHY[f.invalid ?? 'noFace'] ?? 'Can’t see your brows';
   },
 });
 
@@ -58,6 +56,19 @@ function attachStream(): void {
     if (s) void v.play().catch(() => {});
   }
 }
+
+/** Why the veil is up — specific, so the learner knows what to change. A
+ *  blink shows no text (it passes in a moment). */
+const HIDDEN_WHY: Record<string, string> = {
+  blink: '',
+  noFace: 'Can’t see your face',
+  reset: 'Finding your face…',
+  tooDark: 'Too dark — add light in front of you',
+  tooBright: 'Too bright — turn away from the light',
+  multipleFaces: 'Only one face in view, please',
+  faceTurned: 'Face the camera',
+  faceOutOfFrame: 'Your forehead is out of frame — move back a little',
+};
 
 const PLUM = '#3A1D4D';
 const MINT = '#18A88F';
@@ -87,15 +98,16 @@ function draw(): void {
   const oy = (ch - fh * scale) / 2;
   const P = (p: Point) => ({ x: ox + p.x * scale, y: oy + p.y * scale });
 
+  const stale = performance.now() - lastFrameAt > 400;
+  hidden.value = stale || !lastValid;
+  if (stale) hiddenWhy.value = 'Can’t see your face';
+
   if (props.probePoints) {
     drawProbe(g, props.probePoints.map(P), props.highlight ?? []);
     return;
   }
 
   const pts = faceSession.points;
-  const stale = performance.now() - lastFrameAt > 400;
-  hidden.value = stale || !lastValid;
-  if (stale) hiddenWhy.value = 'Can’t see your face';
   if (!pts) return;
   if (replay.value) drawCartoon(g, pts, P, scale);
 
@@ -242,7 +254,7 @@ onBeforeUnmount(() => {
       <div v-if="replay" class="replay-bg" aria-hidden="true" />
       <canvas ref="canvas" aria-hidden="true" />
     </div>
-    <div v-if="on && hidden && hiddenWhy" class="veil" role="status">
+    <div v-if="on && hidden && hiddenWhy" class="veil" :class="{ strip: !!probePoints }" role="status">
       <span class="icon" aria-hidden="true">visibility_off</span> {{ hiddenWhy }}
     </div>
     <div v-if="countdown && countdown > 0" class="count" data-testid="countdown" aria-hidden="true">{{ countdown }}</div>
@@ -284,6 +296,7 @@ video { object-fit: cover; }
   font: var(--h3); color: var(--plum);
   text-shadow: 0 0 6px var(--white);
 }
+.veil.strip { inset: 0 0 auto 0; padding: 10px; background: rgba(255, 255, 255, 0.9); border-bottom: 3px solid var(--red); text-shadow: none; }
 .count {
   position: absolute; inset: 0; display: grid; place-items: center;
   font: 700 160px/1 var(--font); color: var(--white);

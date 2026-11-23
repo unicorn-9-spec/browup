@@ -9,7 +9,7 @@ import FaceDiagram from '../components/FaceDiagram.vue';
 import type { Pose } from '../components/pose';
 import Mirror from '../components/Mirror.vue';
 import { CALIBRATION } from '../../config/thresholds';
-import { buildProfile, CAL_REPS, CAL_STEPS, furrowInner, measureStep, neutralBaseline, thresholdsFor, type CalStep, type NeutralResult, type StepMeasure } from '../face/calibration';
+import { buildProfile, CAL_REPS, CAL_STEPS, furrowInner, measureStep, neutralBaseline, pitchSlope, thresholdsFor, type CalStep, type NeutralResult, type StepMeasure } from '../face/calibration';
 import { faceSession } from '../sensing/session';
 import { useApp } from '../stores/app';
 import { useProfile } from '../stores/profile';
@@ -39,6 +39,7 @@ const message = ref('');
 const neutral = shallowRef<NeutralResult | null>(null);
 const measures = ref<Partial<Record<Exclude<CalStep, 'neutral'>, StepMeasure>>>({});
 const innerPull = ref(0);
+const slope = ref<number | null>(null);
 const result = shallowRef<Profile | null>(null);
 let frames: FeatureFrame[] = [];
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -94,6 +95,7 @@ function finishStep(): void {
     const m = measureStep(s, frames, neutral.value!.baseline!, neutral.value!.mad!);
     measures.value = { ...measures.value, [s]: m };
     if (s === 'furrow') innerPull.value = furrowInner(frames, neutral.value!.baseline!);
+    if (s === 'nod') slope.value = pitchSlope(frames, neutral.value!.baseline!);
     if (m.weak) message.value = 'That movement was small or hidden. You can redo it, or carry on — BrowUp will use standard thresholds for it.';
   }
   done.value = { ...done.value, [s]: true };
@@ -101,7 +103,7 @@ function finishStep(): void {
     stepIdx.value++;
     app.announce(`Step done. Next: ${info.value.title}.`);
   } else {
-    result.value = buildProfile(neutral.value!, measures.value, innerPull.value);
+    result.value = buildProfile(neutral.value!, measures.value, innerPull.value, new Date(), slope.value);
     app.announce('Calibration finished. Check your results and save.');
   }
 }
@@ -177,6 +179,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); if (timer)
             <tr><td>Brow furrow</td><td>{{ pct(result.range.lower) }}, {{ pct(result.range.inner) }} closer</td><td>{{ pct(th.lower) }} lower and {{ pct(th.inner) }} closer</td></tr>
             <tr><td>Head shake</td><td>±{{ deg(result.range.shakeDeg) }}</td><td>±{{ deg(th.shakeDeg) }} swings</td></tr>
             <tr><td>Nod</td><td>±{{ deg(result.range.nodDeg) }}</td><td>±{{ deg(th.nodDeg) }} swings</td></tr>
+            <tr><td>Head-tilt correction</td><td colspan="2">{{ ((result.browPitchSlope ?? 0) * 100).toFixed(1) }}% brow height per degree {{ slope === null ? '(standard — nod too small to measure)' : '(measured from your nods)' }}</td></tr>
           </tbody>
         </table>
         <p class="help">Percentages are compared with your own neutral face, so they work for any face. Steps that were too small or hidden use standard thresholds: {{ result.weak.length ? result.weak.join(', ') : 'none' }}.</p>

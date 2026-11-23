@@ -232,6 +232,9 @@ export interface Profile {
   };
   /** Steps that were too small or too hidden to measure (defaults used). */
   readonly weak: readonly string[];
+  /** Brow-height change per degree of head pitch, measured in the nod step
+   *  (fraction per degree). Absent in older profiles → config default. */
+  readonly browPitchSlope?: number;
 }
 
 export type Sensitivity = 'gentle' | 'standard' | 'strict';

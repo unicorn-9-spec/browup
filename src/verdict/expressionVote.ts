@@ -23,8 +23,8 @@ export function expressionVote(
   frames.forEach((f, i) => {
     if (!present[i] || !f.expr) return;
     n++;
-    const score = marker === 'yn' ? f.expr.surprise : f.expr.anger;
-    if (score >= EXPRESSIONS.AGREE_SCORE) agree++;
+    const agrees = marker === 'yn' ? f.expr.surprise >= EXPRESSIONS.SURPRISE_SCORE : f.expr.anger >= EXPRESSIONS.ANGER_SCORE;
+    if (agrees) agree++;
   });
   if (n < 5) return null;
   return agree / n >= EXPRESSIONS.CONFIDENT_SHARE ? 'confident' : 'likely';
@@ -42,12 +42,18 @@ export interface AgreementTrial {
   readonly anger: number;
 }
 
-export function agreement(trials: readonly AgreementTrial[], score: number = EXPRESSIONS.AGREE_SCORE): { share: number; n: number; byLabel: Record<string, number> } {
+export interface ExprScores { readonly surprise: number; readonly anger: number }
+
+export function agreement(
+  trials: readonly AgreementTrial[],
+  score: number | ExprScores = { surprise: EXPRESSIONS.SURPRISE_SCORE, anger: EXPRESSIONS.ANGER_SCORE },
+): { share: number; n: number; byLabel: Record<string, number> } {
+  const s = typeof score === 'number' ? { surprise: score, anger: score } : score;
   const counted = trials.filter((t) => t.landmarkAgrees);
   const ok = (t: AgreementTrial) =>
-    t.label === 'raise' ? t.surprise >= score
-      : t.label === 'furrow' ? t.anger >= score
-        : t.surprise < score && t.anger < score;
+    t.label === 'raise' ? t.surprise >= s.surprise
+      : t.label === 'furrow' ? t.anger >= s.anger
+        : t.surprise < s.surprise && t.anger < s.anger;
   const byLabel: Record<string, number> = {};
   for (const l of ['raise', 'furrow', 'neutral'] as const) {
     const g = counted.filter((t) => t.label === l);

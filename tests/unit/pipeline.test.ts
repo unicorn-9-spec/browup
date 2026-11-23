@@ -96,6 +96,11 @@ describe('calibration', () => {
     expect(big.personal).toBe(true);
     expect(thresholdsFor(null).raise).toBe(0.08);
   });
+  test('the nod step measures the head-pitch slope (clamped)', () => {
+    const p = calibrate();
+    expect(p.browPitchSlope).toBeGreaterThan(0.005);
+    expect(p.browPitchSlope).toBeLessThanOrEqual(0.025);
+  });
   test('a movement too small for the resting noise is flagged weak and falls back to defaults', () => {
     const p = calibrate({ raise: 0.004 });
     expect(p.weak).toContain('raise');

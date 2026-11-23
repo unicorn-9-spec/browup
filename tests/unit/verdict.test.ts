@@ -55,6 +55,15 @@ describe('yes/no question (raised brows)', () => {
     const v = attempt('yn', (s) => ({ raise: 0.18 * hold(s, 0.1, W + 1), blink: blinkAt(s, [1.2, 2.9]) }));
     expect(v.kind).toBe('HELD');
   });
+  test('a forward head tilt does not hide a raise (head-pitch correction)', () => {
+    // ASL yes/no questions often come with a slight forward head tilt; the
+    // chin-down pitch shortens the projected brow height.
+    const v = attempt('yn', (s) => ({ raise: 0.11 * hold(s, 0.1, W + 1), pitch: -7 * hold(s, 0, W + 1) }));
+    expect(v.kind).toBe('HELD');
+  });
+  test('a chin-down tilt with neutral brows is not a wh-furrow', () => {
+    expect(attempt('wh', (s) => ({ pitch: -8 * hold(s, 0, W + 1) })).kind).toBe('MISSING');
+  });
   test('a low camera frame rate (18 fps) does not change the verdict', () => {
     expect(attempt('yn', (s) => ({ raise: 0.18 * hold(s, 0.1, W + 1) }), { fps: 18 }).kind).toBe('HELD');
   });

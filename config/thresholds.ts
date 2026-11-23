@@ -30,6 +30,21 @@ export const FEATURES = {
   BROW_REFERENCE: 'eyeCorners' as 'eyeCorners' | 'eyelid',
   /** Median smoothing length in frames (PLAN: 3-frame median). */
   MEDIAN_FRAMES: 3,
+  /** Head-pitch correction of brow height (fraction of brow height per
+   *  degree). Measured on a real face (face check, 23 Nov 2026): at rest
+   *  with the chin 8–12° down, neutral brows read 14–16% low (≈ 1.3–1.8%/°;
+   *  trials right after a furrow inflated a first estimate to 2.2%/°, which
+   *  over-corrected large tilts into false raises). Uncorrected, the forward
+   *  head tilt that often comes with
+   *  an ASL yes/no question would hide part of the brow raise. Calibration
+   *  measures each learner's own slope during the nod step (neutral brows,
+   *  pitch ±10°); this default is used when that step is weak. */
+  PITCH_BROW_SLOPE: 0.015,
+  /** Calibrated slopes are clamped to this (a learner who raises their
+   *  brows while nodding must not get an over-correction). */
+  PITCH_BROW_SLOPE_MAX: 0.025,
+  /** The nod step must cover at least this pitch range to measure a slope. */
+  PITCH_SLOPE_MIN_RANGE_DEG: 6,
 } as const;
 
 export const VALIDITY = {
@@ -125,12 +140,17 @@ export const EXPRESSIONS = {
   /** Stage 1 decides: 'pending' = requested and logged for the agreement
    *  test, never used in a verdict; 'on' = second vote; 'off' = not
    *  requested. Set from the face-check report (probe/analyze.ts). */
-  MODE: 'pending' as 'pending' | 'on' | 'off',
+  MODE: 'on' as 'pending' | 'on' | 'off',
   /** Agreement needed in the face check to switch the vote on (PLAN: 80%). */
   KEEP_IF_AGREEMENT: 0.8,
   /** Score (0–100) that counts as "the expression agrees". Placeholder until
    *  the face check measures the learner's neutral scores. */
   AGREE_SCORE: 30,
+  /** Per-expression scores, set from the face check (23 Nov 2026): median
+   *  peak SURPRISE was 42 on raises vs 0 at neutral; ANGRY 98 on furrows vs
+   *  11 at neutral. Thresholds sit near the midpoints. */
+  SURPRISE_SCORE: 21,
+  ANGER_SCORE: 55,
   /** Share of marker frames where the expression agrees for "confident". */
   CONFIDENT_SHARE: 0.6,
 } as const;

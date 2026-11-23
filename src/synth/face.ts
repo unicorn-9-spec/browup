@@ -13,7 +13,10 @@ import type { BlinkSample, ExpressionSample, FacePoints, FaceSample, Point, Us }
 
 type P3 = readonly [number, number, number];
 
-const BROW_R: P3[] = [[-0.56, -0.2, 0.0], [-0.46, -0.27, 0.05], [-0.35, -0.3, 0.08], [-0.24, -0.29, 0.1], [-0.12, -0.24, 0.11]];
+// Brow points sit well in front of the eye corners (brow ridge). The depth
+// is set so head pitch changes the measured brow height by ~1.5–2% per
+// degree, as measured on a real face in the face check (23 Nov 2026).
+const BROW_R: P3[] = [[-0.56, -0.2, 0.2], [-0.46, -0.27, 0.25], [-0.35, -0.3, 0.28], [-0.24, -0.29, 0.3], [-0.12, -0.24, 0.31]];
 const mirror = (p: P3): P3 => [-p[0], p[1], p[2]];
 const T = {
   browR: BROW_R,

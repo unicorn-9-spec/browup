@@ -51,12 +51,16 @@ Run with `npm run probe`, nobody seated, room lights low:
 
 The probe draws every landmark index over the mirror and runs the Stage 1 scripts. `npm run probe:analyze` then writes the report.
 
-- [ ] 478 points in pixel coordinates (already confirmed by Legible); brow 70/63/105/66/107 and 300/293/334/296/336, lids 159/145 and 386/374, inner corners 133/362, all checked by eye on the index overlay.
-- [ ] Landmark rate (Legible measured 22–25 per second).
-- [ ] Brow reference: eye corners against the upper eyelid (the report gives d′ for each).
-- [ ] Expression agreement: ≥ 80% means set `EXPRESSIONS.MODE = 'on'`; otherwise set it to `'off'` and ask Presage to confirm eligibility.
-- [ ] Occlusion spike: valid-frame rate per sentence.
-- [ ] Blink storm: zero raises after the mask.
+Face check done on 23 Nov 2026; the results are in [RESULTS.md §2](RESULTS.md) and [FACE-CHECK-2026-11-23.md](FACE-CHECK-2026-11-23.md).
+
+- [x] 478 points in pixel coordinates; the index overlay tracked the face ("detects good on screen").
+- [x] Landmark rate: 24.3 per second.
+- [x] Brow reference: eye corners (d′ 1.86 / 0.93 against 1.83 / 0.80 for the eyelid).
+- [x] Expression agreement 90%, so `EXPRESSIONS.MODE = 'on'` (SURPRISE 21, ANGRY 55).
+- [x] Occlusion spike: 10 of 10 sentences readable.
+- [x] Blink storm: 0 raises after the mask.
+
+**Blink signal:** the SDK's `blinking.detected` fired only 6 times in 15 s of rapid blinking. BrowUp therefore relies on its own eyelid-opening fallback (eye opening below 30% of neutral), which masked 58% of the blink-phase frames.
 
 `npm run probe:synthetic` runs the analyser on a synthetic log, as a dry run of the plumbing.
 

@@ -46,6 +46,7 @@ export class ValidationTracker {
 
 export class FeatureExtractor {
   private baseline: Baseline | null;
+  private slope: number;
   private readonly validation = new ValidationTracker();
   private blinks: BlinkSample[] = [];
   private exprs: ExpressionSample[] = [];
@@ -61,10 +62,12 @@ export class FeatureExtractor {
 
   constructor(profile: Profile | null = null) {
     this.baseline = profile?.baseline ?? null;
+    this.slope = profile?.browPitchSlope ?? FEATURES.PITCH_BROW_SLOPE;
   }
 
   setProfile(p: Profile | null): void {
     this.baseline = p?.baseline ?? null;
+    this.slope = p?.browPitchSlope ?? FEATURES.PITCH_BROW_SLOPE;
     this.resetSmoothing();
   }
 
@@ -164,10 +167,12 @@ export class FeatureExtractor {
     let invalid: InvalidReason | null = s.reset ? 'reset' : effect.reason;
     if (!invalid && nearBlink) invalid = 'blink';
 
-    const browRel0 = b ? (raw.brow - b.brow) / Math.abs(b.brow) : 0;
-    const innerRel0 = b ? (raw.inner - b.inner) / b.inner : 0;
     const yaw0 = b ? yawDeg(raw.yawRatio, b.yawRatio) : 0;
     const pitch0 = b ? pitchDeg(raw.pitchRatio, b.pitchRatio) : 0;
+    // Brow height relative to neutral, corrected for head pitch (a chin-down
+    // tilt shortens the projected brow height; see FEATURES.PITCH_BROW_SLOPE).
+    const browRel0 = b ? (raw.brow - b.brow) / Math.abs(b.brow) - this.slope * pitch0 : 0;
+    const innerRel0 = b ? (raw.inner - b.inner) / b.inner : 0;
 
     const validBrow = !s.reset && effect.brow && !nearBlink && b !== null;
     const validHead = !s.reset && effect.head && b !== null;
