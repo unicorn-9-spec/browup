@@ -8,3 +8,4 @@ playwright-report/
 probe/logs/
 synthetic-probe.jsonl
 synthetic-probe.report.md
+walkthrough-capture/

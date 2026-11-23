@@ -120,6 +120,19 @@ Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 - **Not a teacher.** BrowUp checks timing and presence of one marker. It does not judge whether a sentence is grammatical or natural.
 - **Accuracy against a Deaf signer has not yet been measured.** The protocol and the table are in [docs/RESULTS.md](docs/RESULTS.md). The automated tests use synthetic faces.
 
+## Walkthrough video
+
+[docs/media/browup-walkthrough.mp4](docs/media/browup-walkthrough.mp4) is a 3-minute narrated tour of the bundled replay. It is captioned, so it works with the sound off. To rebuild it:
+
+```bash
+npm run build
+node scripts/walkthrough/capture.mjs walkthrough-capture        # drives the replay, logs each moment
+pip install kokoro-onnx soundfile                               # plus kokoro-v1.0.onnx and voices-v1.0.bin (kokoro-onnx releases)
+node scripts/walkthrough/compose.mjs walkthrough-capture walkthrough.mp4 <kokoro-model-dir> am_michael
+```
+
+The narration is **Kokoro-82M** (Apache-2.0), an open-source voice model run offline through kokoro-onnx; nothing is sent anywhere. Without a model folder, the script falls back to a built-in Windows voice.
+
 ## Development
 
 ```bash
@@ -152,5 +165,6 @@ SDK details and the differences from the plan are in [docs/SDK-NOTES.md](docs/SD
 - **Material Symbols Rounded** icons (Apache 2.0), by Google.
 - Vue, Pinia, Electron, electron-vite, Ajv, Vitest and Playwright (MIT and similar licences).
 - SDK integration patterns adapted from the author's sibling challenge projects.
+- Walkthrough narration: **Kokoro-82M** by hexgrad (Apache-2.0), via **kokoro-onnx** (MIT). Used only to make the video, not in the app.
 
 Licence: MIT (see [LICENSE](LICENSE)).
